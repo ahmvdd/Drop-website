@@ -1,0 +1,27 @@
+# Fly.io — déploiement 1 service (front + API + SQLite sur volume)
+# app doit être unique sur Fly ; `fly launch` peut le renommer.
+app = "nigelle-royale"
+primary_region = "cdg"          # Paris
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  DB_PATH = "/data/waitlist.db"
+
+# base persistante — sans ça la liste d'attente est perdue à chaque déploiement
+[[mounts]]
+  source = "data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1       # 0 = coupe la machine quand personne, léger cold start
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
