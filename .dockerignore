@@ -1,0 +1,9 @@
+node_modules
+dist
+server/*.db
+server/*.db-*
+.git
+.vscode
+.idea
+*.log
+scripts/dev-all.mjs
