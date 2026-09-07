@@ -185,8 +185,9 @@ const server = createServer(async (req, res) => {
   send(res, 404, { error: 'Not found' })
 })
 
-server.listen(PORT, () => {
-  console.log(`\n  Nigelle Royale — http://localhost:${PORT}`)
+const HOST = process.env.HOST || '0.0.0.0'
+server.listen(PORT, HOST, () => {
+  console.log(`\n  Nigelle Royale — écoute sur ${HOST}:${PORT}`)
   console.log(`  DB    : ${DB_PATH}`)
   console.log(`  Admin : /api/waitlist?key=${ADMIN_KEY}  (JSON)  ·  .csv pour l'export\n`)
 })
