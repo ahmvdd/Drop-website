@@ -1,6 +1,6 @@
 # Fly.io — déploiement 1 service (front + API + SQLite sur volume)
 # app doit être unique sur Fly ; `fly launch` peut le renommer.
-app = "nigelle-royale"
+app = "drop-website"
 primary_region = "cdg"          # Paris
 
 [build]
