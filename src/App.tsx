@@ -1,27 +1,66 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Flower2 } from 'lucide-react'
 
 const EASE_ENTRANCE = 'cubic-bezier(0.16, 1, 0.3, 1)'
-const EASE_OVERLAY = 'cubic-bezier(0.76, 0, 0.24, 1)'
 
 const VIDEO_URL =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260819_212700_3bb9329b-5c50-4257-a09b-ca85cf3654a3.mp4'
 
 const BRAND = 'Nigelle Royale'
-const MENU_LINKS = ['Accueil', "L'huile", 'Histoire', 'Rejoindre']
+const LAUNCH_DATE = new Date('2026-10-13T10:00:00')
 
 function scrollToForm() {
   document.getElementById('inscription')?.scrollIntoView({ behavior: 'smooth' })
 }
 
-function App() {
-  const [navMounted, setNavMounted] = useState(false)
-  const [heroMounted, setHeroMounted] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+function useInView<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+  const [inView, setInView] = useState(false)
 
   useEffect(() => {
-    const t1 = window.setTimeout(() => setNavMounted(true), 100)
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.2 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return [ref, inView] as const
+}
+
+function useCountdown(target: Date) {
+  const [timeLeft, setTimeLeft] = useState(() => target.getTime() - Date.now())
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setTimeLeft(target.getTime() - Date.now())
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [target])
+
+  const clamped = Math.max(0, timeLeft)
+  const days = Math.floor(clamped / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((clamped / (1000 * 60 * 60)) % 24)
+  const minutes = Math.floor((clamped / (1000 * 60)) % 60)
+  const seconds = Math.floor((clamped / 1000) % 60)
+
+  return { days, hours, minutes, seconds }
+}
+
+function App() {
+  const [heroMounted, setHeroMounted] = useState(false)
+  const [badgeMounted, setBadgeMounted] = useState(false)
+
+  useEffect(() => {
+    const t1 = window.setTimeout(() => setBadgeMounted(true), 100)
     const t2 = window.setTimeout(() => setHeroMounted(true), 300)
     return () => {
       window.clearTimeout(t1)
@@ -29,119 +68,25 @@ function App() {
     }
   }, [])
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [menuOpen])
-
-  const enter = navMounted
-    ? 'opacity-100 translate-y-0'
-    : 'opacity-0 -translate-y-4'
-
   const heroEnter = heroMounted
     ? 'opacity-100 translate-y-0'
     : 'opacity-0 translate-y-8'
 
   return (
     <div className="bg-black">
-      {/* NAVBAR */}
-      <nav
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
-          scrolled ? 'bg-black/80 backdrop-blur-md' : 'bg-transparent'
-        }`}
-      >
-        {/* grid 3 colonnes égales → le pill reste centré quelle que soit la largeur du logo */}
-        <div className="max-w-[1440px] mx-auto px-6 md:px-10 grid grid-cols-3 items-center h-16 md:h-20">
-          {/* Logo */}
-          <a
-            href="#"
-            className={`justify-self-start z-50 italic font-instrument text-2xl md:text-3xl tracking-tight text-white transition-all duration-700 ${enter}`}
-            style={{ transitionTimingFunction: EASE_ENTRANCE, transitionDelay: '0ms' }}
-          >
-            {BRAND}
-          </a>
-
-          {/* Pill — desktop */}
-          <button
-            type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-            className={`hidden md:flex justify-self-center px-5 py-2 rounded-full border border-white/20 text-white/90 text-sm hover:bg-white/10 items-center gap-2 transition-all duration-700 ${enter}`}
-            style={{
-              transitionTimingFunction: EASE_ENTRANCE,
-              transitionDelay: navMounted ? '200ms' : '0ms',
-            }}
-          >
-            {menuOpen ? 'Fermer' : 'Naviguer'}
-          </button>
-
-          {/* colonne centrale vide sur mobile (le pill est caché) */}
-          <span aria-hidden className="md:hidden" />
-
-          {/* Hamburger — mobile */}
-          <button
-            type="button"
-            aria-label="Ouvrir le menu"
-            onClick={() => setMenuOpen((o) => !o)}
-            className={`md:hidden justify-self-end w-8 h-8 flex flex-col items-center justify-center gap-1.5 transition-all duration-700 ${enter}`}
-            style={{
-              transitionTimingFunction: EASE_ENTRANCE,
-              transitionDelay: navMounted ? '200ms' : '0ms',
-            }}
-          >
-            <span
-              className={`w-6 h-[2px] bg-white transition-transform duration-500 ${
-                menuOpen ? 'rotate-45 translate-y-[4px]' : ''
-              }`}
-              style={{ transitionTimingFunction: EASE_OVERLAY }}
-            />
-            <span
-              className={`w-6 h-[2px] bg-white transition-transform duration-500 ${
-                menuOpen ? '-rotate-45 -translate-y-[4px]' : ''
-              }`}
-              style={{ transitionTimingFunction: EASE_OVERLAY }}
-            />
-          </button>
-        </div>
-      </nav>
-
-      {/* OVERLAY MENU */}
+      {/* IDENTITE — logo + repère collection, sans menu */}
       <div
-        className={`fixed inset-0 z-40 bg-black flex flex-col items-center justify-center transition-all duration-700 ${
-          menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        className={`fixed top-0 left-0 w-full z-50 px-6 md:px-10 h-16 md:h-20 flex items-center justify-between transition-all duration-700 ${
+          badgeMounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3'
         }`}
-        style={{ transitionTimingFunction: EASE_OVERLAY }}
+        style={{ transitionTimingFunction: EASE_ENTRANCE }}
       >
-        <div className="flex flex-col items-center gap-8">
-          {MENU_LINKS.map((label, i) => (
-            <a
-              key={label}
-              href="#"
-              onClick={(e) => {
-                e.preventDefault()
-                setMenuOpen(false)
-                if (label === 'Rejoindre') setTimeout(scrollToForm, 120)
-              }}
-              className={`text-white font-instrument text-4xl md:text-6xl hover:opacity-60 transition-all duration-[600ms] ${
-                menuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-              }`}
-              style={{
-                transitionTimingFunction: EASE_OVERLAY,
-                transitionDelay: menuOpen ? `${150 + i * 80}ms` : '0ms',
-              }}
-            >
-              {label}
-            </a>
-          ))}
-        </div>
+        <span className="italic font-instrument text-2xl md:text-3xl tracking-tight text-white">
+          {BRAND}
+        </span>
+        <span className="text-white/50 text-xs tracking-[0.35em] uppercase">
+          2026 &mdash; 2027
+        </span>
       </div>
 
       {/* HERO */}
@@ -179,7 +124,7 @@ function App() {
               transitionDelay: heroMounted ? '600ms' : '0ms',
             }}
           >
-            Notre huile de nigelle arrive bientôt. Réservez votre place avant
+            Notre huile de nigelle arrive bient&ocirc;t. R&eacute;servez votre place avant
             l&apos;ouverture.
           </p>
           <button
@@ -196,9 +141,155 @@ function App() {
         </div>
       </section>
 
+      {/* GALERIE */}
+      <GallerySection />
+
+      {/* COUNTDOWN */}
+      <CountdownSection />
+
       {/* INSCRIPTION */}
       <SignupSection />
+
+      {/* FOOTER */}
+      <Footer />
     </div>
+  )
+}
+
+function GallerySection() {
+  const [ref, inView] = useInView<HTMLDivElement>()
+
+  return (
+    <section
+      ref={ref}
+      className="relative w-full bg-black py-32 md:py-40 px-6 overflow-hidden flex items-center justify-center min-h-[80vh] md:min-h-screen"
+    >
+      {/* mot géant en fond */}
+      <span
+        aria-hidden
+        className={`absolute font-instrument text-[5.5rem] sm:text-[9rem] md:text-[13rem] lg:text-[16rem] leading-none whitespace-nowrap select-none pointer-events-none transition-all duration-[1400ms] ${
+          inView ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        }`}
+        style={{
+          transitionTimingFunction: EASE_ENTRANCE,
+          color: 'transparent',
+          WebkitTextStroke: '1px rgba(255,255,255,0.12)',
+        }}
+      >
+        NIGELLE
+      </span>
+
+      {/* flacon */}
+      <img
+        src="/images/bottle-floating.jpeg"
+        alt="Flacon Nigelle Royale"
+        className={`relative z-10 w-[200px] sm:w-[240px] md:w-[300px] rounded-md shadow-2xl shadow-black/70 transition-all duration-[1100ms] ${
+          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+        style={{
+          transitionTimingFunction: EASE_ENTRANCE,
+          transitionDelay: inView ? '250ms' : '0ms',
+        }}
+      />
+
+      {/* légende */}
+      <div
+        className={`absolute z-10 bottom-10 right-6 md:bottom-16 md:right-16 max-w-[220px] text-right transition-all duration-[1000ms] ${
+          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+        }`}
+        style={{
+          transitionTimingFunction: EASE_ENTRANCE,
+          transitionDelay: inView ? '550ms' : '0ms',
+        }}
+      >
+        <p className="text-white/45 text-[11px] uppercase tracking-[0.3em] mb-3">
+          L&apos;essentiel
+        </p>
+        <p className="text-white/60 text-sm md:text-base">
+          Press&eacute;e &agrave; froid, sans additifs. Une goutte suffit pour r&eacute;v&eacute;ler
+          tout ce que la nigelle a &agrave; offrir.
+        </p>
+      </div>
+    </section>
+  )
+}
+
+function CountdownSection() {
+  const [ref, inView] = useInView<HTMLDivElement>()
+  const { days, hours, minutes, seconds } = useCountdown(LAUNCH_DATE)
+
+  const units = [
+    { value: days, label: 'Jours' },
+    { value: hours, label: 'Heures' },
+    { value: minutes, label: 'Min' },
+    { value: seconds, label: 'Sec' },
+  ]
+
+  return (
+    <section
+      ref={ref}
+      className="relative w-full bg-black py-24 md:py-32 px-6 flex flex-col items-center text-center"
+    >
+      <p
+        className={`text-white/45 text-[11px] uppercase tracking-[0.3em] mb-4 transition-all duration-[900ms] ${
+          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+        }`}
+        style={{ transitionTimingFunction: EASE_ENTRANCE }}
+      >
+        Pr&eacute;commandes
+      </p>
+      <h2
+        className={`font-instrument text-white text-4xl md:text-6xl mb-4 transition-all duration-[1100ms] ${
+          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+        style={{
+          transitionTimingFunction: EASE_ENTRANCE,
+          transitionDelay: inView ? '150ms' : '0ms',
+          textShadow: inView ? '0 0 40px rgba(255,255,255,0.18)' : '0 0 0 rgba(255,255,255,0)',
+        }}
+      >
+        Lancement des pr&eacute;commandes
+      </h2>
+      <p
+        className={`text-white/60 text-base md:text-lg mb-14 max-w-md transition-all duration-[1100ms] ${
+          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+        style={{
+          transitionTimingFunction: EASE_ENTRANCE,
+          transitionDelay: inView ? '300ms' : '0ms',
+        }}
+      >
+        Compte &agrave; rebours avant l&apos;ouverture des commandes.
+      </p>
+
+      <div
+        className={`flex items-start gap-4 sm:gap-8 transition-all duration-[1100ms] ${
+          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+        style={{
+          transitionTimingFunction: EASE_ENTRANCE,
+          transitionDelay: inView ? '450ms' : '0ms',
+        }}
+      >
+        {units.map((u, i) => (
+          <div key={u.label} className="flex items-start">
+            <div className="flex flex-col items-center w-16 sm:w-20">
+              <span className="font-instrument text-white text-5xl sm:text-6xl md:text-7xl tabular-nums">
+                {String(u.value).padStart(2, '0')}
+              </span>
+              <span className="text-white/40 text-[10px] uppercase tracking-[0.25em] mt-2">
+                {u.label}
+              </span>
+            </div>
+            {i < units.length - 1 && (
+              <span className="font-instrument text-white/25 text-5xl sm:text-6xl md:text-7xl mx-1 sm:mx-2 select-none">
+                :
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -241,10 +332,10 @@ function SignupSection() {
           <div className="text-center">
             <Flower2 className="mx-auto mb-5 h-9 w-9 text-white/80" />
             <h2 className="font-instrument text-white text-4xl md:text-5xl mb-3">
-              Vous êtes sur la liste
+              Vous &ecirc;tes sur la liste
             </h2>
             <p className="text-white/60">
-              On vous écrit dès l&apos;ouverture des réservations.
+              On vous &eacute;crit d&egrave;s l&apos;ouverture des r&eacute;servations.
             </p>
           </div>
         ) : (
@@ -256,8 +347,8 @@ function SignupSection() {
               Rejoignez la liste
             </h2>
             <p className="text-white/60 text-base mb-9">
-              {BRAND} — huile de nigelle 100&nbsp;% pure, pressée à froid.
-              Première série limitée. Laissez vos coordonnées, on vous prévient à
+              {BRAND} &mdash; huile de nigelle 100&nbsp;% pure, press&eacute;e &agrave; froid.
+              Premi&egrave;re s&eacute;rie limit&eacute;e. Laissez vos coordonn&eacute;es, on vous pr&eacute;vient &agrave;
               l&apos;ouverture.
             </p>
 
@@ -283,7 +374,7 @@ function SignupSection() {
                 value={interest}
                 onChange={(e) => setInterest(e.target.value)}
                 rows={3}
-                placeholder="Pourquoi êtes-vous intéressé ?"
+                placeholder="Pourquoi &ecirc;tes-vous int&eacute;ress&eacute; ?"
                 className={`${field} resize-none`}
               />
 
@@ -299,13 +390,26 @@ function SignupSection() {
                 {status === 'loading' ? 'Envoi…' : 'Je m’inscris'}
               </button>
               <p className="text-xs text-white/35">
-                Aucun spam — seulement l&apos;annonce du lancement.
+                Aucun spam &mdash; seulement l&apos;annonce du lancement.
               </p>
             </form>
           </>
         )}
       </div>
     </section>
+  )
+}
+
+function Footer() {
+  return (
+    <footer className="w-full bg-black border-t border-white/10 px-6 py-8 text-center">
+      <p className="text-white/35 text-xs max-w-lg mx-auto leading-relaxed">
+        Ce site est une page de pr&eacute;commande / manifestation d&apos;int&eacute;r&ecirc;t. Aucune
+        commande ferme n&apos;est trait&eacute;e &agrave; ce stade.
+        <br />
+        &copy; 2026 {BRAND} &mdash; Tous droits r&eacute;serv&eacute;s.
+      </p>
+    </footer>
   )
 }
 
