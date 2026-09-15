@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Flower2 } from 'lucide-react'
+import { Droplet, Flower2, Leaf, Maximize2, MapPin, Minimize2, Snowflake } from 'lucide-react'
 
 const EASE_ENTRANCE = 'cubic-bezier(0.16, 1, 0.3, 1)'
 
 const VIDEO_URL =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260819_212700_3bb9329b-5c50-4257-a09b-ca85cf3654a3.mp4'
+const PRODUCT_VIDEO_URL = '/videos/bottle-drops.mp4'
 
 const BRAND = 'Nigelle Royale'
 const LAUNCH_DATE = new Date('2026-10-13T10:00:00')
+const PRICE_REGULAR = '19,99€'
+const PRICE_PREORDER = '15,99€'
 
 function scrollToForm() {
   document.getElementById('inscription')?.scrollIntoView({ behavior: 'smooth' })
@@ -156,59 +159,103 @@ function App() {
   )
 }
 
+const CHARACTERISTICS = [
+  { icon: Snowflake, label: 'Pression &agrave; froid' },
+  { icon: Leaf, label: '100&nbsp;% pure, sans additifs' },
+  { icon: MapPin, label: 'Origine &Eacute;thiopie' },
+  { icon: Droplet, label: 'Flacon 100&nbsp;ml' },
+]
+
 function GallerySection() {
   const [ref, inView] = useInView<HTMLDivElement>()
+  const [expanded, setExpanded] = useState(false)
+
+  useEffect(() => {
+    if (!expanded) return
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setExpanded(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
 
   return (
     <section
       ref={ref}
-      className="relative w-full bg-black py-32 md:py-40 px-6 overflow-hidden flex items-center justify-center min-h-[80vh] md:min-h-screen"
+      className="relative w-full bg-black px-4 md:px-10 py-16 md:py-24"
     >
-      {/* mot géant en fond */}
-      <span
-        aria-hidden
-        className={`absolute font-instrument text-[5.5rem] sm:text-[9rem] md:text-[13rem] lg:text-[16rem] leading-none whitespace-nowrap select-none pointer-events-none transition-all duration-[1400ms] ${
+      <div
+        className={`max-w-5xl mx-auto rounded-[2rem] md:rounded-[2.5rem] overflow-hidden border border-white/10 bg-neutral-950 flex flex-col md:flex-row transition-all duration-[1200ms] ${
           inView ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
         }`}
-        style={{
-          transitionTimingFunction: EASE_ENTRANCE,
-          color: 'transparent',
-          WebkitTextStroke: '1px rgba(255,255,255,0.12)',
-        }}
+        style={{ transitionTimingFunction: EASE_ENTRANCE }}
       >
-        NIGELLE
-      </span>
+        {/* vid&eacute;o */}
+        <div
+          className={`relative overflow-hidden shrink-0 transition-all duration-700 ${
+            expanded ? 'h-[70vh] md:h-[85vh] md:w-full' : 'h-[55vh] md:h-auto md:w-1/2'
+          }`}
+          style={{ transitionTimingFunction: EASE_ENTRANCE }}
+        >
+          <video
+            src={PRODUCT_VIDEO_URL}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+          />
+          <button
+            type="button"
+            onClick={() => setExpanded((e) => !e)}
+            aria-label={expanded ? 'Réduire la vidéo' : 'Agrandir la vidéo'}
+            className="absolute bottom-5 right-5 w-11 h-11 rounded-full bg-black/50 backdrop-blur border border-white/20 flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+          >
+            {expanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
 
-      {/* flacon */}
-      <img
-        src="/images/bottle-floating.jpeg"
-        alt="Flacon Nigelle Royale"
-        className={`relative z-10 w-[200px] sm:w-[240px] md:w-[300px] rounded-md shadow-2xl shadow-black/70 transition-all duration-[1100ms] ${
-          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-        style={{
-          transitionTimingFunction: EASE_ENTRANCE,
-          transitionDelay: inView ? '250ms' : '0ms',
-        }}
-      />
+          {/* stat flottante */}
+          <div
+            className={`absolute bottom-5 left-5 rounded-2xl bg-black/60 backdrop-blur border border-white/15 px-4 py-3 transition-all duration-700 ${
+              inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+            }`}
+            style={{ transitionTimingFunction: EASE_ENTRANCE, transitionDelay: inView ? '250ms' : '0ms' }}
+          >
+            <span className="font-instrument text-white text-2xl block">{PRICE_PREORDER}</span>
+            <span className="text-white/50 text-[10px] uppercase tracking-[0.2em]">Pr&eacute;commande</span>
+          </div>
+        </div>
 
-      {/* légende */}
-      <div
-        className={`absolute z-10 bottom-10 right-6 md:bottom-16 md:right-16 max-w-[220px] text-right transition-all duration-[1000ms] ${
-          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-        }`}
-        style={{
-          transitionTimingFunction: EASE_ENTRANCE,
-          transitionDelay: inView ? '550ms' : '0ms',
-        }}
-      >
-        <p className="text-white/45 text-[11px] uppercase tracking-[0.3em] mb-3">
-          L&apos;essentiel
-        </p>
-        <p className="text-white/60 text-sm md:text-base">
-          Press&eacute;e &agrave; froid, sans additifs. Une goutte suffit pour r&eacute;v&eacute;ler
-          tout ce que la nigelle a &agrave; offrir.
-        </p>
+        {/* panneau info */}
+        <div
+          className={`flex flex-col justify-center overflow-hidden transition-all duration-700 ${
+            expanded
+              ? 'max-h-0 opacity-0 px-0 py-0 md:w-0 md:px-0 md:py-0'
+              : 'max-h-[999px] opacity-100 px-7 py-8 md:w-1/2 md:px-10 md:py-10'
+          }`}
+          style={{ transitionTimingFunction: EASE_ENTRANCE }}
+        >
+          <div className="space-y-4">
+            {CHARACTERISTICS.map((c, i) => (
+              <div
+                key={c.label}
+                className={`flex items-center gap-3 whitespace-nowrap transition-all duration-700 ${
+                  inView && !expanded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+                }`}
+                style={{
+                  transitionTimingFunction: EASE_ENTRANCE,
+                  transitionDelay: inView && !expanded ? `${350 + i * 100}ms` : '0ms',
+                }}
+              >
+                <c.icon className="w-4 h-4 text-white/50 shrink-0" />
+                <span
+                  className="text-white/75 text-sm"
+                  dangerouslySetInnerHTML={{ __html: c.label }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   )
@@ -261,6 +308,26 @@ function CountdownSection() {
       >
         Compte &agrave; rebours avant l&apos;ouverture des commandes.
       </p>
+
+      <div
+        className={`flex items-baseline gap-3 mb-14 transition-all duration-[1100ms] ${
+          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+        style={{
+          transitionTimingFunction: EASE_ENTRANCE,
+          transitionDelay: inView ? '380ms' : '0ms',
+        }}
+      >
+        <span className="text-white/35 text-lg md:text-xl line-through">
+          {PRICE_REGULAR}
+        </span>
+        <span className="font-instrument text-white text-4xl md:text-5xl">
+          {PRICE_PREORDER}
+        </span>
+        <span className="text-white/45 text-xs uppercase tracking-[0.2em]">
+          le flacon &mdash; tarif pr&eacute;commande
+        </span>
+      </div>
 
       <div
         className={`flex items-start gap-4 sm:gap-8 transition-all duration-[1100ms] ${
