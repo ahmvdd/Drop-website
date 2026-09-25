@@ -11,6 +11,8 @@ const BRAND = 'Nigelle Royale'
 const LAUNCH_DATE = new Date('2026-10-05T10:00:00')
 const PRICE_REGULAR = '18,99€'
 const PRICE_PREORDER = '13,99€'
+const TOTAL_SPOTS = 60
+const INITIAL_TAKEN = 10
 
 function ensureAutoplay(el: HTMLVideoElement | null) {
   if (!el) return
@@ -379,8 +381,21 @@ function SignupSection() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [interest, setInterest] = useState('')
+  const [quantity, setQuantity] = useState('1')
   const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
   const [error, setError] = useState('')
+  const [spotsLeft, setSpotsLeft] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch('/api/waitlist/count')
+      .then((r) => r.json())
+      .then((d: { count?: number }) => {
+        if (typeof d.count === 'number') {
+          setSpotsLeft(Math.max(0, TOTAL_SPOTS - INITIAL_TAKEN - d.count))
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -390,11 +405,12 @@ function SignupSection() {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name, email, interest }),
+        body: JSON.stringify({ name, email, interest, quantity: Number(quantity) }),
       })
       const body = (await res.json().catch(() => ({}))) as { error?: string }
       if (!res.ok) throw new Error(body.error || 'Une erreur est survenue.')
       setStatus('ok')
+      if (spotsLeft !== null) setSpotsLeft(Math.max(0, spotsLeft - 1))
     } catch (err) {
       setStatus('error')
       setError(err instanceof Error ? err.message : 'Erreur réseau.')
@@ -428,11 +444,30 @@ function SignupSection() {
             <h2 className="font-instrument text-white text-4xl md:text-5xl mb-3">
               Rejoignez la liste
             </h2>
-            <p className="text-white/60 text-base mb-9">
+            <p className="text-white/60 text-base mb-6">
               {BRAND} &mdash; huile de nigelle 100&nbsp;% pure, press&eacute;e &agrave; froid.
-              Premi&egrave;re s&eacute;rie limit&eacute;e. Laissez vos coordonn&eacute;es, on vous pr&eacute;vient &agrave;
-              l&apos;ouverture.
+              Premi&egrave;re s&eacute;rie limit&eacute;e. Laissez vos coordonn&eacute;es pour &ecirc;tre inform&eacute;
+              en priorit&eacute; de l&apos;ouverture des pr&eacute;commandes.
             </p>
+
+            {spotsLeft !== null && (
+              <div className="mb-8">
+                <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500/70 rounded-full transition-all duration-700"
+                    style={{
+                      width: `${Math.min(100, Math.max(4, ((TOTAL_SPOTS - spotsLeft) / TOTAL_SPOTS) * 100))}%`,
+                      transitionTimingFunction: EASE_ENTRANCE,
+                    }}
+                  />
+                </div>
+                <p className="text-white/45 text-xs mt-2">
+                  {spotsLeft > 0
+                    ? `Plus que ${spotsLeft} places sur ${TOTAL_SPOTS} au tarif précommande`
+                    : `Places au tarif précommande épuisées`}
+                </p>
+              </div>
+            )}
 
             <form onSubmit={submit} className="space-y-4">
               <input
@@ -452,7 +487,23 @@ function SignupSection() {
                 autoComplete="email"
                 className={field}
               />
+              <div>
+                <label htmlFor="quantity" className="block text-white/45 text-xs mb-2">
+                  Quantit&eacute; souhait&eacute;e
+                </label>
+                <input
+                  id="quantity"
+                  required
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  className={field}
+                />
+              </div>
               <textarea
+                required
                 value={interest}
                 onChange={(e) => setInterest(e.target.value)}
                 rows={3}

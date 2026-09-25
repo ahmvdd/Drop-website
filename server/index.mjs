@@ -27,17 +27,24 @@ db.exec(`
     user_agent TEXT
   )
 `)
+try {
+  db.exec(`ALTER TABLE leads ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1`)
+} catch {
+  // colonne déjà présente (redéploiement)
+}
 
 const insert = db.prepare(`
-  INSERT INTO leads (name, email, interest, created_at, user_agent)
-  VALUES (?, ?, ?, ?, ?)
+  INSERT INTO leads (name, email, interest, quantity, created_at, user_agent)
+  VALUES (?, ?, ?, ?, ?, ?)
   ON CONFLICT(email) DO UPDATE SET
     name = excluded.name,
-    interest = excluded.interest
+    interest = excluded.interest,
+    quantity = excluded.quantity
 `)
 const listAll = db.prepare(
-  `SELECT id, name, email, interest, created_at FROM leads ORDER BY id DESC`,
+  `SELECT id, name, email, interest, quantity, created_at FROM leads ORDER BY id DESC`,
 )
+const countAll = db.prepare(`SELECT COUNT(*) AS count FROM leads`)
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -164,16 +171,22 @@ const server = createServer(async (req, res) => {
     }
     const name = String(data.name ?? '').trim().slice(0, 120)
     const email = String(data.email ?? '').trim().toLowerCase().slice(0, 200)
-    const interest = String(data.interest ?? '').trim().slice(0, 2000) || null
+    const interest = String(data.interest ?? '').trim().slice(0, 2000)
+    const quantity = Number.parseInt(data.quantity, 10)
 
     if (name.length < 2) return send(res, 400, { error: 'Merci d’indiquer votre nom.' })
     if (!EMAIL_RE.test(email)) return send(res, 400, { error: 'Email invalide.' })
+    if (interest.length < 2) return send(res, 400, { error: 'Merci d’indiquer votre motivation.' })
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
+      return send(res, 400, { error: 'Quantité invalide.' })
+    }
 
     try {
       insert.run(
         name,
         email,
         interest,
+        quantity,
         new Date().toISOString(),
         String(req.headers['user-agent'] ?? '').slice(0, 300),
       )
@@ -181,6 +194,12 @@ const server = createServer(async (req, res) => {
     } catch {
       return send(res, 500, { error: 'Erreur serveur, réessayez.' })
     }
+  }
+
+  // --- API : nombre d'inscrits (public, pour l'effet "places limitées") ---
+  if (req.method === 'GET' && url.pathname === '/api/waitlist/count') {
+    const { count } = countAll.get()
+    return send(res, 200, { count })
   }
 
   // --- API : consultation (protégée par ?key=) ---
@@ -195,9 +214,9 @@ const server = createServer(async (req, res) => {
     if (url.pathname.endsWith('.csv')) {
       const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
       const csv = [
-        'id,name,email,interest,created_at',
+        'id,name,email,interest,quantity,created_at',
         ...rows.map((r) =>
-          [r.id, r.name, r.email, r.interest, r.created_at].map(esc).join(','),
+          [r.id, r.name, r.email, r.interest, r.quantity, r.created_at].map(esc).join(','),
         ),
       ].join('\n')
       return send(res, 200, csv, {
