@@ -12,6 +12,12 @@ const LAUNCH_DATE = new Date('2026-10-13T10:00:00')
 const PRICE_REGULAR = '19,99€'
 const PRICE_PREORDER = '15,99€'
 
+function ensureAutoplay(el: HTMLVideoElement | null) {
+  if (!el) return
+  el.muted = true
+  el.play()?.catch(() => {})
+}
+
 function scrollToForm() {
   document.getElementById('inscription')?.scrollIntoView({ behavior: 'smooth' })
 }
@@ -101,6 +107,7 @@ function App() {
           style={{ transitionTimingFunction: EASE_ENTRANCE }}
         >
           <video
+            ref={ensureAutoplay}
             src={VIDEO_URL}
             autoPlay
             muted
@@ -198,6 +205,7 @@ function GallerySection() {
           style={{ transitionTimingFunction: EASE_ENTRANCE }}
         >
           <video
+            ref={ensureAutoplay}
             src={PRODUCT_VIDEO_URL}
             autoPlay
             muted
@@ -470,6 +478,25 @@ function SignupSection() {
 function Footer() {
   return (
     <footer className="w-full bg-black border-t border-white/10 px-6 py-8 text-center">
+      <a
+        href="https://www.instagram.com/nigelle.royale/"
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-2 text-white/45 hover:text-white/75 text-xs mb-5 transition-colors"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className="w-4 h-4"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none" />
+        </svg>
+        @nigelle.royale
+      </a>
       <p className="text-white/35 text-xs max-w-lg mx-auto leading-relaxed">
         Ce site est une page de pr&eacute;commande / manifestation d&apos;int&eacute;r&ecirc;t. Aucune
         commande ferme n&apos;est trait&eacute;e &agrave; ce stade.

@@ -4,6 +4,7 @@
 //   Prod  : npm run build && npm start   (tout sur $PORT, une seule origine)
 import { createServer } from 'node:http'
 import { DatabaseSync } from 'node:sqlite'
+import { createReadStream } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, extname, join, normalize } from 'node:path'
@@ -74,7 +75,7 @@ const MIME = {
   '.map': 'application/json',
 }
 
-async function serveStatic(res, pathname) {
+async function serveStatic(res, pathname, method, rangeHeader) {
   let rel = normalize(decodeURIComponent(pathname)).replace(/^(\.\.[/\\])+/, '')
   if (rel === '/' || rel === '' || rel === '\\') rel = '/index.html'
   const filePath = join(DIST, rel)
@@ -83,13 +84,44 @@ async function serveStatic(res, pathname) {
     const s = await stat(filePath)
     if (s.isDirectory()) return false
     const isHtml = extname(filePath) === '.html'
+    const mime = MIME[extname(filePath).toLowerCase()] || 'application/octet-stream'
+    const cacheControl = isHtml ? 'no-cache' : 'public, max-age=31536000, immutable'
+
+    const match = rangeHeader && /^bytes=(\d*)-(\d*)$/.exec(rangeHeader)
+    if (match) {
+      const start = match[1] ? parseInt(match[1], 10) : 0
+      const end = match[2] ? parseInt(match[2], 10) : s.size - 1
+      if (Number.isNaN(start) || Number.isNaN(end) || start > end || end >= s.size) {
+        res.writeHead(416, { 'content-range': `bytes */${s.size}` })
+        res.end()
+        return true
+      }
+      res.writeHead(206, {
+        'content-type': mime,
+        'content-length': end - start + 1,
+        'content-range': `bytes ${start}-${end}/${s.size}`,
+        'accept-ranges': 'bytes',
+        'cache-control': cacheControl,
+      })
+      if (method === 'HEAD') {
+        res.end()
+      } else {
+        createReadStream(filePath, { start, end }).pipe(res)
+      }
+      return true
+    }
+
     res.writeHead(200, {
-      'content-type': MIME[extname(filePath).toLowerCase()] || 'application/octet-stream',
-      'cache-control': isHtml
-        ? 'no-cache'
-        : 'public, max-age=31536000, immutable',
+      'content-type': mime,
+      'content-length': s.size,
+      'accept-ranges': 'bytes',
+      'cache-control': cacheControl,
     })
-    res.end(await readFile(filePath))
+    if (method === 'HEAD') {
+      res.end()
+    } else {
+      createReadStream(filePath).pipe(res)
+    }
     return true
   } catch {
     return false
@@ -178,7 +210,7 @@ const server = createServer(async (req, res) => {
 
   // --- Front statique (dist/) + fallback SPA ---
   if (req.method === 'GET' || req.method === 'HEAD') {
-    if (await serveStatic(res, url.pathname)) return
+    if (await serveStatic(res, url.pathname, req.method, req.headers.range)) return
     if (await serveIndex(res)) return
   }
 
