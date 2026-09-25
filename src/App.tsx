@@ -482,13 +482,13 @@ function Footer() {
         href="https://www.instagram.com/nigelle.royale/"
         target="_blank"
         rel="noreferrer"
-        className="inline-flex items-center gap-2 text-white/45 hover:text-white/75 text-xs mb-5 transition-colors"
+        className="inline-flex items-center gap-2.5 rounded-full bg-white text-black px-5 py-2.5 text-sm font-medium mb-6 hover:bg-white/90 transition-colors"
       >
         <svg
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.8"
           className="w-4 h-4"
         >
           <rect x="3" y="3" width="18" height="18" rx="5" />
