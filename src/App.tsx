@@ -8,9 +8,9 @@ const VIDEO_URL =
 const PRODUCT_VIDEO_URL = '/videos/bottle-drops.mp4'
 
 const BRAND = 'Nigelle Royale'
-const LAUNCH_DATE = new Date('2026-10-13T10:00:00')
-const PRICE_REGULAR = '19,99€'
-const PRICE_PREORDER = '15,99€'
+const LAUNCH_DATE = new Date('2026-10-05T10:00:00')
+const PRICE_REGULAR = '18,99€'
+const PRICE_PREORDER = '13,99€'
 
 function ensureAutoplay(el: HTMLVideoElement | null) {
   if (!el) return
@@ -317,52 +317,59 @@ function CountdownSection() {
         Compte &agrave; rebours avant l&apos;ouverture des commandes.
       </p>
 
-      <div
-        className={`flex items-baseline gap-3 mb-14 transition-all duration-[1100ms] ${
-          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}
-        style={{
-          transitionTimingFunction: EASE_ENTRANCE,
-          transitionDelay: inView ? '380ms' : '0ms',
-        }}
-      >
-        <span className="text-white/35 text-lg md:text-xl line-through">
-          {PRICE_REGULAR}
-        </span>
-        <span className="font-instrument text-white text-4xl md:text-5xl">
-          {PRICE_PREORDER}
-        </span>
-        <span className="text-white/45 text-xs uppercase tracking-[0.2em]">
-          le flacon &mdash; tarif pr&eacute;commande
-        </span>
-      </div>
+      <div className="relative">
+        <div
+          aria-hidden
+          className="absolute -inset-x-10 -inset-y-6 -z-10 rounded-full bg-amber-500/25 blur-3xl"
+        />
 
-      <div
-        className={`flex items-start gap-4 sm:gap-8 transition-all duration-[1100ms] ${
-          inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-        style={{
-          transitionTimingFunction: EASE_ENTRANCE,
-          transitionDelay: inView ? '450ms' : '0ms',
-        }}
-      >
-        {units.map((u, i) => (
-          <div key={u.label} className="flex items-start">
-            <div className="flex flex-col items-center w-16 sm:w-20">
-              <span className="font-instrument text-white text-5xl sm:text-6xl md:text-7xl tabular-nums">
-                {String(u.value).padStart(2, '0')}
-              </span>
-              <span className="text-white/40 text-[10px] uppercase tracking-[0.25em] mt-2">
-                {u.label}
-              </span>
+        <div
+          className={`flex items-baseline gap-3 mb-14 transition-all duration-[1100ms] ${
+            inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+          style={{
+            transitionTimingFunction: EASE_ENTRANCE,
+            transitionDelay: inView ? '380ms' : '0ms',
+          }}
+        >
+          <span className="text-white/35 text-lg md:text-xl line-through">
+            {PRICE_REGULAR}
+          </span>
+          <span className="font-instrument text-white text-4xl md:text-5xl">
+            {PRICE_PREORDER}
+          </span>
+          <span className="text-white/45 text-xs uppercase tracking-[0.2em]">
+            le flacon &mdash; tarif pr&eacute;commande
+          </span>
+        </div>
+
+        <div
+          className={`flex items-start gap-4 sm:gap-8 transition-all duration-[1100ms] ${
+            inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+          style={{
+            transitionTimingFunction: EASE_ENTRANCE,
+            transitionDelay: inView ? '450ms' : '0ms',
+          }}
+        >
+          {units.map((u, i) => (
+            <div key={u.label} className="flex items-start">
+              <div className="flex flex-col items-center w-16 sm:w-20">
+                <span className="font-instrument text-white text-5xl sm:text-6xl md:text-7xl tabular-nums">
+                  {String(u.value).padStart(2, '0')}
+                </span>
+                <span className="text-white/40 text-[10px] uppercase tracking-[0.25em] mt-2">
+                  {u.label}
+                </span>
+              </div>
+              {i < units.length - 1 && (
+                <span className="font-instrument text-white/25 text-5xl sm:text-6xl md:text-7xl mx-1 sm:mx-2 select-none">
+                  :
+                </span>
+              )}
             </div>
-            {i < units.length - 1 && (
-              <span className="font-instrument text-white/25 text-5xl sm:text-6xl md:text-7xl mx-1 sm:mx-2 select-none">
-                :
-              </span>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   )
