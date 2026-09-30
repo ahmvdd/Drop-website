@@ -115,7 +115,10 @@ function App() {
             muted
             loop
             playsInline
-            className="w-full h-full object-cover"
+            disablePictureInPicture
+            disableRemotePlayback
+            controlsList="nodownload nofullscreen noremoteplayback"
+            className="w-full h-full object-cover pointer-events-none"
           />
         </div>
 
