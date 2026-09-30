@@ -139,8 +139,9 @@ function App() {
               transitionDelay: heroMounted ? '600ms' : '0ms',
             }}
           >
-            Notre huile de nigelle arrive bient&ocirc;t. R&eacute;servez votre place avant
-            l&apos;ouverture.
+            Notre huile de nigelle arrive bient&ocirc;t.
+            <br />
+            R&eacute;servez votre place avant l&apos;ouverture.
           </p>
           <button
             type="button"
@@ -216,7 +217,10 @@ function GallerySection() {
             muted
             loop
             playsInline
-            className="w-full h-full object-cover"
+            disablePictureInPicture
+            disableRemotePlayback
+            controlsList="nodownload nofullscreen noremoteplayback"
+            className="w-full h-full object-cover pointer-events-none"
           />
           <button
             type="button"
