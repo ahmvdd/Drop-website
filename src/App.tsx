@@ -8,7 +8,7 @@ const VIDEO_URL =
 const PRODUCT_VIDEO_URL = '/videos/bottle-drops.mp4'
 
 const BRAND = 'Nigelle Royale'
-const LAUNCH_DATE = new Date('2026-10-05T10:00:00')
+const LAUNCH_DATE = new Date('2026-10-19T10:00:00')
 const PRICE_REGULAR = '18,99€'
 const PRICE_PREORDER = '13,99€'
 const TOTAL_SPOTS = 60
@@ -111,6 +111,7 @@ function App() {
           <video
             ref={ensureAutoplay}
             src={VIDEO_URL}
+            poster="/images/hero-poster.jpg"
             autoPlay
             muted
             loop
@@ -213,6 +214,7 @@ function GallerySection() {
           <video
             ref={ensureAutoplay}
             src={PRODUCT_VIDEO_URL}
+            poster="/images/bottle-drops-poster.jpg"
             autoPlay
             muted
             loop
