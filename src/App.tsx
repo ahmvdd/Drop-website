@@ -568,6 +568,11 @@ function Footer() {
         Ce site est une page de pr&eacute;commande / manifestation d&apos;int&eacute;r&ecirc;t. Aucune
         commande ferme n&apos;est trait&eacute;e &agrave; ce stade.
         <br />
+        Conform&eacute;ment au RGPD, les informations recueillies via ce formulaire sont utilis&eacute;es
+        uniquement pour vous contacter au sujet du lancement de {BRAND} et ne sont jamais
+        partag&eacute;es avec des tiers. Vous pouvez demander leur suppression &agrave; tout moment via
+        notre Instagram.
+        <br />
         &copy; 2026 {BRAND} &mdash; Tous droits r&eacute;serv&eacute;s.
       </p>
     </footer>
