@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Nigelle Royale — Inscrits</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #0a0a0a;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        min-height: 100vh;
+        padding: 24px 16px 60px;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .sub {
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 0.85rem;
+        margin-bottom: 28px;
+      }
+      .key-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      input[type="password"],
+      input[type="text"] {
+        flex: 1;
+        min-width: 200px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        padding: 10px 14px;
+        color: #fff;
+        font-size: 0.9rem;
+        outline: none;
+      }
+      input:focus {
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+      button {
+        background: #fff;
+        color: #000;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button:hover {
+        background: rgba(255, 255, 255, 0.85);
+      }
+      button.ghost {
+        background: transparent;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      button.ghost:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .stats {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+      .stat {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 14px 18px;
+        min-width: 140px;
+      }
+      .stat .n {
+        font-size: 1.6rem;
+        font-weight: 600;
+      }
+      .stat .l {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.45);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 2px;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+      }
+      thead th {
+        text-align: left;
+        color: rgba(255, 255, 255, 0.45);
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.06em;
+        font-weight: 500;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        white-space: nowrap;
+      }
+      tbody td {
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        vertical-align: top;
+      }
+      tbody tr:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .email {
+        color: rgba(255, 255, 255, 0.6);
+      }
+      .qty {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 0.8rem;
+      }
+      .interest {
+        max-width: 280px;
+        color: rgba(255, 255, 255, 0.55);
+        white-space: pre-wrap;
+      }
+      .date {
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.8rem;
+        white-space: nowrap;
+      }
+      .empty,
+      .error {
+        text-align: center;
+        padding: 60px 20px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .error {
+        color: #ff8a8a;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Liste d&rsquo;attente &mdash; Nigelle Royale</h1>
+      <p class="sub">Acc&egrave;s prot&eacute;g&eacute; &mdash; usage interne uniquement</p>
+
+      <div class="key-row">
+        <input id="key" type="password" placeholder="Cl&eacute; admin" autocomplete="off" />
+        <button id="load">Afficher</button>
+        <button id="toggle" class="ghost" type="button">Voir la cl&eacute;</button>
+      </div>
+
+      <div id="result" hidden>
+        <div class="stats">
+          <div class="stat">
+            <div class="n" id="statCount">&mdash;</div>
+            <div class="l">Inscrits</div>
+          </div>
+          <div class="stat">
+            <div class="n" id="statQty">&mdash;</div>
+            <div class="l">Flacons demand&eacute;s</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="csv" class="ghost" type="button">T&eacute;l&eacute;charger en CSV</button>
+          <button id="refresh" class="ghost" type="button">Rafra&icirc;chir</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Qt&eacute;</th>
+                <th>Motivation</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="empty" class="empty" hidden>Aucun inscrit pour le moment.</div>
+      <div id="error" class="error" hidden></div>
+    </div>
+
+    <script>
+      const keyInput = document.getElementById('key')
+      const loadBtn = document.getElementById('load')
+      const refreshBtn = document.getElementById('refresh')
+      const toggleBtn = document.getElementById('toggle')
+      const csvBtn = document.getElementById('csv')
+      const resultEl = document.getElementById('result')
+      const emptyEl = document.getElementById('empty')
+      const errorEl = document.getElementById('error')
+      const rowsEl = document.getElementById('rows')
+      const statCount = document.getElementById('statCount')
+      const statQty = document.getElementById('statQty')
+
+      const STORAGE_KEY = 'nigelle_admin_key'
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) keyInput.value = saved
+
+      function esc(v) {
+        const d = document.createElement('div')
+        d.textContent = v ?? ''
+        return d.innerHTML
+      }
+
+      function fmtDate(iso) {
+        try {
+          return new Date(iso).toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        } catch {
+          return iso
+        }
+      }
+
+      async function load() {
+        const key = keyInput.value.trim()
+        errorEl.hidden = true
+        emptyEl.hidden = true
+        resultEl.hidden = true
+        if (!key) return
+
+        try {
+          const res = await fetch(`/api/waitlist?key=${encodeURIComponent(key)}`)
+          const body = await res.json().catch(() => ({}))
+          if (!res.ok) throw new Error(body.error || 'Erreur de chargement.')
+
+          localStorage.setItem(STORAGE_KEY, key)
+          const leads = body.leads || []
+
+          if (leads.length === 0) {
+            emptyEl.hidden = false
+            return
+          }
+
+          statCount.textContent = leads.length
+          statQty.textContent = leads.reduce((sum, l) => sum + (Number(l.quantity) || 0), 0)
+
+          rowsEl.innerHTML = leads
+            .map(
+              (l) => `
+            <tr>
+              <td>${esc(l.name)}</td>
+              <td class="email">${esc(l.email)}</td>
+              <td><span class="qty">${esc(l.quantity ?? 1)}</span></td>
+              <td class="interest">${esc(l.interest)}</td>
+              <td class="date">${esc(fmtDate(l.created_at))}</td>
+            </tr>
+          `,
+            )
+            .join('')
+
+          resultEl.hidden = false
+        } catch (err) {
+          errorEl.textContent = err instanceof Error ? err.message : 'Erreur réseau.'
+          errorEl.hidden = false
+        }
+      }
+
+      loadBtn.addEventListener('click', load)
+      refreshBtn.addEventListener('click', load)
+      keyInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') load()
+      })
+      toggleBtn.addEventListener('click', () => {
+        const show = keyInput.type === 'password'
+        keyInput.type = show ? 'text' : 'password'
+        toggleBtn.textContent = show ? 'Cacher la clé' : 'Voir la clé'
+      })
+      csvBtn.addEventListener('click', () => {
+        const key = keyInput.value.trim()
+        if (!key) return
+        window.location.href = `/api/waitlist.csv?key=${encodeURIComponent(key)}`
+      })
+
+      if (saved) load()
+    </script>
+  </body>
+</html>
