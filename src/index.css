@@ -16,3 +16,16 @@ body {
 .font-instrument {
   font-family: 'Instrument Serif', serif;
 }
+
+/* iOS Safari dessine un gros bouton play natif tant qu'une vidéo n'a pas
+   démarré, même sans l'attribut `controls` — invisible via pointer-events,
+   il faut cibler directement le pseudo-élément du moteur de rendu. */
+video::-webkit-media-controls,
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-panel {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
